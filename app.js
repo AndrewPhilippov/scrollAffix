@@ -1,3 +1,49 @@
+/*23.05*/
+
+let el = document.querySelector('aside');
+let main = document.querySelector('main');
+let elHeight = el.getBoundingClientRect().height;
+let mainHeight = main.getBoundingClientRect().height;
+let lastScrollTop = 0;
+
+  // Listen for scroll events
+  window.addEventListener('scroll', function ( e ) {
+    let elTop = el.getBoundingClientRect().top;
+    let elBottom = el.getBoundingClientRect().bottom;
+    let mainBottom = main.getBoundingClientRect().bottom;
+    let winHeight = window.innerHeight;
+    let winY = window.scrollY;
+    let body = document.body,
+        html = document.documentElement;
+    let docHeight = Math.max( body.scrollHeight, body.offsetHeight,
+      html.clientHeight, html.scrollHeight, html.offsetHeight );
+    function getCoords(elem) {
+      let box = elem.getBoundingClientRect();
+
+      return {
+        top: box.top + pageYOffset,
+        left: box.left + pageXOffset
+      };
+    }
+
+    // console.log('from main Bottom to top: ', main.getBoundingClientRect().bottom);
+    // console.log('from EL bottom to top: ', el.getBoundingClientRect().bottom);
+
+    let mainBottomFromPageTop = getCoords(main).top + mainHeight;
+    let elBottomFromPageTop = getCoords(el).top + elHeight;
+    console.log('mainBottomFromPageTop: ', mainBottomFromPageTop);
+    console.log('elBottomFromPageTop: ', elBottomFromPageTop);
+    console.log('elBottomFromPageTop > mainBottomFromPageTop: ', elBottomFromPageTop > mainBottomFromPageTop)
+    if(winY > lastScrollTop){ // IF SCROLL DOWN
+    } else {//    IF SCROLL UP
+    }
+    lastScrollTop = winY;
+  }, false);
+
+/*end*/
+
+
+
 const InitAffix = () => {
     let el = document.getElementById('priceScrollSpy');
     let elHeight = el.getBoundingClientRect().height;
