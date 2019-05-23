@@ -1,151 +1,171 @@
-/*23.05*/
+import BaseSliderInit from "../lib/base-slider-init";
 
-let el = document.querySelector('aside');
-let main = document.querySelector('main');
-let elHeight = el.getBoundingClientRect().height;
-let mainHeight = main.getBoundingClientRect().height;
-let lastScrollTop = 0;
+const InitAffix = {
 
-  // Listen for scroll events
-  window.addEventListener('scroll', function ( e ) {
-    let elTop = el.getBoundingClientRect().top;
-    let elBottom = el.getBoundingClientRect().bottom;
-    let mainBottom = main.getBoundingClientRect().bottom;
-    let winHeight = window.innerHeight;
-    let winY = window.scrollY;
-    let body = document.body,
-        html = document.documentElement;
-    let docHeight = Math.max( body.scrollHeight, body.offsetHeight,
-      html.clientHeight, html.scrollHeight, html.offsetHeight );
-    function getCoords(elem) {
-      let box = elem.getBoundingClientRect();
+    init: function () {
 
-      return {
-        top: box.top + pageYOffset,
-        left: box.left + pageXOffset
-      };
-    }
+        let el = document.getElementById(this.priceScrollSpyId);
+        this.startCoords = this.getCoords(el);
+        el.style.position = 'relative';
 
-    // console.log('from main Bottom to top: ', main.getBoundingClientRect().bottom);
-    // console.log('from EL bottom to top: ', el.getBoundingClientRect().bottom);
+        let block = document.querySelector('#detail-car');
+        this.dealCarBlockBottom = this.getCoords(block).top + block.offsetHeight;
 
-    let mainBottomFromPageTop = getCoords(main).top + mainHeight;
-    let elBottomFromPageTop = getCoords(el).top + elHeight;
-    console.log('mainBottomFromPageTop: ', mainBottomFromPageTop);
-    console.log('elBottomFromPageTop: ', elBottomFromPageTop);
-    console.log('elBottomFromPageTop > mainBottomFromPageTop: ', elBottomFromPageTop > mainBottomFromPageTop)
-    if(winY > lastScrollTop){ // IF SCROLL DOWN
-    } else {//    IF SCROLL UP
-    }
-    lastScrollTop = winY;
-  }, false);
+        window.addEventListener('scroll', function () {
+            InitAffix.scroll();
+        }, false);
+        // window.addEventListener('resize', function () {
+        //     InitAffix.scroll();
+        // }, false);
+    },
 
-/*end*/
+    priceScrollSpyId: 'priceScrollSpy',
 
+    lastScrollTop: 0,
 
+    startCoords: 0,
 
-const InitAffix = () => {
-    let el = document.getElementById('priceScrollSpy');
-    let elHeight = el.getBoundingClientRect().height;
-    let elTop = el.getBoundingClientRect().top;
-    let elBottom = el.getBoundingClientRect().bottom;
-    let footer = document.getElementsByTagName('footer');
-    let footerHeight = footer[0].offsetHeight;
-    let beforeFooter = footer[0].offsetTop;
-    let lastScrollTop = 0;
-    let isScrolling;
-    let top = 0;
+    dealCarBlockBottom: 0,
 
-    // Listen for scroll events
-    window.addEventListener('scroll', function ( e ) {
-        let winHeight = window.innerHeight;
-        let winY = window.scrollY;
-        let docHeight = document.body.scrollHeight;
-        let stopBottom = elBottom + winY + 40;
-            // Run the callback
-            // console.log('/--------------------/');
-            // console.log('window.innerHeight: ', winHeight);
-            // console.log('window.scrollY: ', winY);
-            // console.log('elTop: ', elTop);
-            // console.log('elBottom: ', elBottom);
-            // console.log('winY + winHeight: ', winHeight + winY);
-            // console.log('StopBottom - elBottom + winY: ', stopBottom); // To get the point to stop before footer *** 40px - for margin
-            // console.log('beforeFooter: ', footer[0].offsetTop);
-            // console.log('DocHeight: ', docHeight);
-            // console.log('footerHeight: ', footer[0].getBoundingClientRect().height);
-            // console.log('el.offsetTop: ', el.offsetTop);
-            // console.log('/--------------------/');
+    getCoords: function (elem) {
+        let box = elem.getBoundingClientRect();
 
-            let isBottomVisible = (winHeight + winY) > elBottom;
-            let isUnderFooter = elBottom + winY > docHeight - footerHeight;
+        let body = document.body;
+        let docEl = document.documentElement;
 
-            // IF SCROLL DOWN
-            if(winY > lastScrollTop){
-                console.log('scroll down');
-                if(isBottomVisible){
-                    el.style.position = 'fixed';
-                    el.style.bottom = '0';
-                    if(isUnderFooter){
-                        el.style.position = 'absolute';
-                        el.style.bottom = 'initial';
-                        el.style.top = '1450px';
-                    } else {
-                        el.style.position = 'fixed';
-                        el.style.bottom = '0';
-                    }
-                } else {
-                    el.style.position = 'absolute';
-                    el.style.top = 'initial';
-                    el.style.bottom = 'initial';
+        let scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
+        let scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
 
-                }
-            //    IF SCROLL UP
+        let clientTop = docEl.clientTop || body.clientTop || 0;
+        let clientLeft = docEl.clientLeft || body.clientLeft || 0;
+
+        let top = box.top + scrollTop - clientTop;
+        let left = box.left + scrollLeft - clientLeft;
+
+        return {
+            top: parseInt(top),
+            left: parseInt(left)
+        };
+    },
+
+    getDocumentTop: function(el) {
+        return this.getCoords(el).top;
+    },
+
+    getClientTop: function(el) {
+        return el.getBoundingClientRect().top;
+    },
+
+    scrollHeight: function() {
+        return Math.max(
+            document.body.scrollHeight, document.documentElement.scrollHeight,
+            document.body.offsetHeight, document.documentElement.offsetHeight,
+            document.body.clientHeight, document.documentElement.clientHeight
+        );
+    },
+
+    setFixedTop: function (el) {
+        if ('fixed' !== el.style.position) {
+            el.style.position = 'fixed';
+            el.style.top = this.startCoords.top + 'px';
+            el.style.bottom = 'initial';
+        }
+    },
+
+    setFixedBottom: function (el) {
+        if ('fixed' !== el.style.position) {
+            el.style.position = 'fixed';
+            el.style.bottom = '0px';
+            el.style.top = 'initial';
+        }
+    },
+
+    fixedScroll: false,
+
+    setAbsoluteTop: function(el) {
+        if ('absolute' !== el.style.position) {
+            el.style.top = this.getDocumentTop(el) + 'px';
+            el.style.bottom = 'initial';
+            el.style.position = 'absolute';
+        }
+    },
+
+    checkVisibleBottom: function(el) {
+        return ((window.innerHeight + window.scrollY) - (this.getDocumentTop(el) + el.offsetHeight)) > 0;
+    },
+
+    checkVisibleTop: function(el) {
+        return el.getBoundingClientRect().top > 0;
+    },
+
+    catchBottom: function (el) {
+        let elBottom = Math.abs(this.getDocumentTop(el) + el.offsetHeight - InitAffix.scrollHeight());
+        let winBottom = Math.abs(parseInt(window.scrollY) + window.innerHeight - InitAffix.scrollHeight());
+
+        return (elBottom - winBottom) > 0;
+    },
+
+    catchTop: function (el) {
+        return  0 < this.getClientTop(el);
+    },
+
+    scroll: function () {
+
+        let el = document.getElementById(this.priceScrollSpyId),
+            winY = parseInt(window.scrollY);
+
+        if (winY > InitAffix.lastScrollTop) {
+
+            console.log('///////////');
+
+            if ((winY + window.innerHeight) >= InitAffix.dealCarBlockBottom) {
+                el.style.bottom = 'initial';
+                el.style.top = (InitAffix.dealCarBlockBottom - el.offsetHeight -192) + 'px';
+                el.style.position = 'absolute';
+                InitAffix.fixedScroll = false;
             } else {
-                console.log('scroll up');
-                console.log('getBoundingClientRect', el.getBoundingClientRect().top);
-                console.log('---------', $("#priceScrollSpy").offset().top);
 
-                if(el.getBoundingClientRect().top >= 118){
-                    console.log('fixed');
-                    el.style.position = 'fixed';
-                    el.style.top = elTop + 'px';
-                } else {
-                    if (el.style.position != 'absolute') {
-                        console.log('absolute');
-                        console.log('-->>>--', $("#priceScrollSpy").offset().top);
-                        el.style.top = Math.round($("#priceScrollSpy").offset().top, 0) + 'px';
-                        console.log('-->>22>--', el.style.top);
+                if ((InitAffix.startCoords.top + el.offsetHeight) < window.innerHeight && false === InitAffix.fixedScroll) {
+                    InitAffix.setFixedTop(el);
+                    InitAffix.fixedScroll = true;
+                } else
+                    if (InitAffix.catchBottom(el) && false === InitAffix.fixedScroll) {
+                    console.log('------2-----');
+                    InitAffix.setFixedBottom(el);
+                    InitAffix.fixedScroll = true;
+                } else
+                    if (false === InitAffix.checkVisibleBottom(el) && 'fixed' === el.style.position) {
+                    console.log('------3-----');
+
+                        el.style.top = InitAffix.getDocumentTop(el) + 'px';
+                        el.style.bottom = 'initial';
                         el.style.position = 'absolute';
-                    }
+                        InitAffix.fixedScroll = false;
                 }
             }
-            lastScrollTop = winY;
-        top = winY + 'px';
-    }, false);
 
-//     $("#priceScrollSpy").affix({
-//         offset: {
-//             top: 100,
-//             bottom: $("footer").outerHeight(true)
-//         }
-//     });
-// };
-//
-// $(window).on('resize orientationchange', function () {
-//     if ($(this).width() < 1320) {
-//         $(window).off('.affix');
-//         $("#priceScrollSpy")
-//             .removeClass("affix affix-top affix-bottom")
-//             .removeData("bs.affix");
-//     } else {
-//         InitAffix();
-//     }
-// });
+            console.log('InitAffix.checkVisibleBottom(el)', InitAffix.checkVisibleBottom(el));
+
+        } else {
+
+            if (winY === 0) {
+                el.style.position = 'relative';
+                el.style.top = 'initial';
+                el.style.bottom = 'initial';
+            } else {
+                if (InitAffix.fixedScroll) {
+                    InitAffix.setAbsoluteTop(el);
+                    InitAffix.fixedScroll = false;
+                } else if (InitAffix.catchTop(el)) {
+                    InitAffix.setFixedTop(el);
+                }
+            }
+        }
+
+        InitAffix.lastScrollTop = winY;
+    }
 };
 
-
-$(document).ready(function(){
-    if ($(window).innerWidth() >= 1320) {
-        InitAffix();
-    }
+$(document).ready(function() {
+    InitAffix.init();
 });
